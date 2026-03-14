@@ -8,8 +8,8 @@ import numpy as np
 # ==========================================
 # CONFIG
 # ==========================================
-key = API_KEY = "AIzaSyA6EGhAqV2HSSzcAw8qg-Juhu913houozk"
-CHANNEL_ID = "UCX6OQ3DkcsbYNE6H8uQQuVA"  # MrBeast
+key = API_KEY = "API_KEY"
+CHANNEL_ID = "CHANNEL_ID"  # MrBeast
 
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
