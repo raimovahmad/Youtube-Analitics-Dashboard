@@ -1,0 +1,180 @@
+{
+  "kpis": {
+    "total_videos": 44,
+    "total_views": 11750898076,
+    "total_likes": 276883655,
+    "avg_views": 267065865,
+    "avg_like_rate": 2.36,
+    "best_video": "The World&#39;s Fastest Cleaners",
+    "best_views": 717873040
+  },
+  "type_stats": [
+    {
+      "type": "Long",
+      "count": 26,
+      "avg_views": 243714632.26923078,
+      "avg_likes": 4614276.769230769,
+      "avg_like_rate": 2.0126923076923076
+    },
+    {
+      "type": "Medium",
+      "count": 3,
+      "avg_views": 101294327.33333333,
+      "avg_likes": 1996496.6666666667,
+      "avg_like_rate": 3.7866666666666666
+    },
+    {
+      "type": "Shorts",
+      "count": 15,
+      "avg_views": 340695643.6666667,
+      "avg_likes": 10061531.266666668,
+      "avg_like_rate": 2.68
+    }
+  ],
+  "keywords": [
+    {
+      "keyword": "world",
+      "count": 3,
+      "avg_views": 343995147,
+      "avg_likes": 11433336
+    },
+    {
+      "keyword": "hours",
+      "count": 5,
+      "avg_views": 261343735,
+      "avg_likes": 4830463
+    },
+    {
+      "keyword": "$",
+      "count": 17,
+      "avg_views": 249651203,
+      "avg_likes": 5234244
+    },
+    {
+      "keyword": "vs",
+      "count": 7,
+      "avg_views": 248352592,
+      "avg_likes": 4724030
+    },
+    {
+      "keyword": "days",
+      "count": 3,
+      "avg_views": 213696432,
+      "avg_likes": 4346588
+    },
+    {
+      "keyword": "last",
+      "count": 2,
+      "avg_views": 207858700,
+      "avg_likes": 4058338
+    },
+    {
+      "keyword": "survive",
+      "count": 4,
+      "avg_views": 193771612,
+      "avg_likes": 3756853
+    },
+    {
+      "keyword": "every",
+      "count": 4,
+      "avg_views": 187856656,
+      "avg_likes": 3211291
+    },
+    {
+      "keyword": "win",
+      "count": 6,
+      "avg_views": 181531735,
+      "avg_likes": 3291025
+    },
+    {
+      "keyword": "free",
+      "count": 0,
+      "avg_views": 0,
+      "avg_likes": 0
+    },
+    {
+      "keyword": "minutes",
+      "count": 0,
+      "avg_views": 0,
+      "avg_likes": 0
+    },
+    {
+      "keyword": "challenge",
+      "count": 0,
+      "avg_views": 0,
+      "avg_likes": 0
+    }
+  ],
+  "top10": [
+    {
+      "title": "The World&#39;s Fastest Cleaners",
+      "views": 717873040,
+      "likes": 26467846,
+      "like_rate": 3.69,
+      "type": "Shorts"
+    },
+    {
+      "title": "I Tipped A Pizza Delivery Driver A Car",
+      "views": 688080616,
+      "likes": 26735970,
+      "like_rate": 3.89,
+      "type": "Shorts"
+    },
+    {
+      "title": "Spot The Fake Animal For $10,000",
+      "views": 635966321,
+      "likes": 17260353,
+      "like_rate": 2.71,
+      "type": "Shorts"
+    },
+    {
+      "title": "Reach the Money, Win $10,000",
+      "views": 511350495,
+      "likes": 7853695,
+      "like_rate": 1.54,
+      "type": "Shorts"
+    },
+    {
+      "title": "Do Pawnshops Scam You?",
+      "views": 446773296,
+      "likes": 16683175,
+      "like_rate": 3.73,
+      "type": "Shorts"
+    },
+    {
+      "title": "$1 vs $1,000,000 Hotel Room!",
+      "views": 426973170,
+      "likes": 7508328,
+      "like_rate": 1.76,
+      "type": "Long"
+    },
+    {
+      "title": "7 Days Stranded At Sea",
+      "views": 417364750,
+      "likes": 8306559,
+      "like_rate": 1.99,
+      "type": "Long"
+    },
+    {
+      "title": "$1 vs $100,000,000 House!",
+      "views": 413617495,
+      "likes": 6441994,
+      "like_rate": 1.56,
+      "type": "Long"
+    },
+    {
+      "title": "I Built Willy Wonka&#39;s Chocolate Factory!",
+      "views": 372248248,
+      "likes": 6930022,
+      "like_rate": 1.86,
+      "type": "Long"
+    },
+    {
+      "title": "$100,000,000 Bathroom",
+      "views": 367866292,
+      "likes": 12740482,
+      "like_rate": 3.46,
+      "type": "Shorts"
+    }
+  ]
+}
