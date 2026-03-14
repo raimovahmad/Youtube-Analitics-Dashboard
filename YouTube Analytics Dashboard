@@ -1,0 +1,21 @@
+ MrBeast YouTube Analytics Dashboard
+
+## 📊 Live Demo
+raimovahmad.github.io/mrbeast-analytics
+
+## 🛠️ Tech Stack
+- Python (pandas, scikit-learn)
+- YouTube Data API v3
+- Chart.js
+- GitHub Pages
+
+## 📁 Files
+- `youtube_analysis.py` — data collection & analysis
+- `dashboard_data.json` — processed dataset
+- `index.html` — interactive dashboard
+
+## 🔍 Key Insights
+- Shorts avg 341M views — 40% higher than Long-form
+- "world" keyword → 344M avg views
+- Anti-fraud: engagement paradox detected
+```
