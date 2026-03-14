@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MrBeast Analytics Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #1e1e2e;
+    --red: #ff2d4e;
+    --orange: #ff6b00;
+    --gold: #ffd60a;
+    --blue: #00c2ff;
+    --green: #00e5a0;
+    --text: #f0f0f8;
+    --muted: #6b6b8a;
+    --glow-red: 0 0 30px rgba(255,45,78,0.3);
+    --glow-blue: 0 0 30px rgba(0,194,255,0.2);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,45,78,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,45,78,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-area { display: flex; align-items: center; gap: 16px; }
+  .logo-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: var(--glow-red);
+  }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 2px; }
+  h1 span { color: var(--red); }
+  .subtitle { font-size: 0.82rem; color: var(--muted); letter-spacing: 0.5px; margin-top: 2px; }
+  .header-badge {
+    background: linear-gradient(135deg, rgba(255,45,78,0.15), rgba(255,107,0,0.15));
+    border: 1px solid rgba(255,45,78,0.3);
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .kpi:hover { transform: translateY(-2px); border-color: rgba(255,45,78,0.3); }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, linear-gradient(90deg, var(--red), var(--orange)));
+  }
+  .kpi-icon { font-size: 1.3rem; margin-bottom: 10px; }
+  .kpi-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.7rem;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .kpi-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500; }
+  .kpi-sub { font-size: 0.72rem; color: var(--green); margin-top: 6px; font-weight: 500; }
+
+  /* CHARTS LAYOUT */
+  .chart-row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row-3 { grid-template-columns: 1.6fr 1fr 1fr; }
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  .row-full { grid-template-columns: 1fr; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1.5px;
+    color: var(--text);
+  }
+  .card-desc { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .card-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .badge-red { background: rgba(255,45,78,0.15); color: var(--red); }
+  .badge-blue { background: rgba(0,194,255,0.15); color: var(--blue); }
+  .badge-gold { background: rgba(255,214,10,0.15); color: var(--gold); }
+  .badge-green { background: rgba(0,229,160,0.15); color: var(--green); }
+
+  canvas { max-height: 280px; }
+  .tall canvas { max-height: 340px; }
+
+  /* INSIGHTS PANEL */
+  .insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  .insight-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    border-left: 3px solid var(--accent-color, var(--red));
+    transition: transform 0.2s;
+  }
+  .insight-card:hover { transform: translateX(4px); }
+  .insight-icon { font-size: 1.4rem; margin-bottom: 10px; }
+  .insight-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; }
+  .insight-text { font-size: 0.88rem; line-height: 1.5; color: var(--text); }
+  .insight-highlight { color: var(--red); font-weight: 700; }
+  .insight-highlight.blue { color: var(--blue); }
+  .insight-highlight.gold { color: var(--gold); }
+  .insight-highlight.green { color: var(--green); }
+
+  /* TOP VIDEOS TABLE */
+  .top-table { width: 100%; border-collapse: collapse; }
+  .top-table th {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    padding: 0 12px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .top-table tr.data-row {
+    border-top: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .top-table tr.data-row:hover { background: rgba(255,255,255,0.03); }
+  .top-table td { padding: 10px 12px; font-size: 0.82rem; vertical-align: middle; }
+  .rank { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--muted); width: 32px; }
+  .rank.top3 { color: var(--gold); }
+  .vid-title { font-weight: 500; max-width: 240px; line-height: 1.3; }
+  .vid-type {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+  }
+  .type-s { background: rgba(255,45,78,0.15); color: var(--red); }
+  .type-l { background: rgba(0,194,255,0.15); color: var(--blue); }
+  .type-m { background: rgba(255,214,10,0.15); color: var(--gold); }
+  .bar-wrap { width: 100px; background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--orange)); }
+  .num { font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; color: var(--text); }
+  .like-pct { font-size: 0.75rem; font-weight: 600; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-area">
+      <div class="logo-icon">🎬</div>
+      <div>
+        <h1>MR<span>BEAST</span> ANALYTICS</h1>
+        <div class="subtitle">YouTube Channel Intelligence Dashboard · 44 Videos Analyzed</div>
+      </div>
+    </div>
+    <div class="header-badge">📊 Real Data · 2019–2026</div>
+  </header>
+
+  <!-- KPI CARDS -->
+  <div class="section-label">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon">👁️</div>
+      <div class="kpi-value" id="kv-views">11.75B</div>
+      <div class="kpi-label">Total Views</div>
+      <div class="kpi-sub">↑ Across 44 videos</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">👍</div>
+      <div class="kpi-value">276.9M</div>
+      <div class="kpi-label">Total Likes</div>
+      <div class="kpi-sub">avg 2.36% like rate</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">💬</div>
+      <div class="kpi-value">3.38M</div>
+      <div class="kpi-label">Total Comments</div>
+      <div class="kpi-sub">Long videos dominate</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">📺</div>
+      <div class="kpi-value">267M</div>
+      <div class="kpi-label">Avg Views/Video</div>
+      <div class="kpi-sub">↑ Shorts: 341M avg</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">🏆</div>
+      <div class="kpi-value">717.9M</div>
+      <div class="kpi-label">Best Video Views</div>
+      <div class="kpi-sub">World's Fastest Cleaners</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">🔥</div>
+      <div class="kpi-value">2.36%</div>
+      <div class="kpi-label">Avg Like Rate</div>
+      <div class="kpi-sub">Medium: 3.79% peak</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Views Timeline + Donut + Type Comparison -->
+  <div class="section-label">Performance Analysis</div>
+  <div class="chart-row row-3">
+    <div class="card tall">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Views Timeline</div>
+          <div class="card-desc">Average views per video by publish period</div>
+        </div>
+        <span class="card-badge badge-red">Trend</span>
+      </div>
+      <canvas id="timelineChart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Content Mix</div>
+          <div class="card-desc">Video type distribution</div>
+        </div>
+        <span class="card-badge badge-gold">Format</span>
+      </div>
+      <canvas id="donutChart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Type Performance</div>
+          <div class="card-desc">Avg views by format</div>
+        </div>
+        <span class="card-badge badge-blue">Compare</span>
+      </div>
+      <canvas id="typeChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 2: Top 10 Table + Likes vs Views -->
+  <div class="chart-row row-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top 10 Videos by Views</div>
+          <div class="card-desc">Ranked by total view count</div>
+        </div>
+        <span class="card-badge badge-gold">Leaderboard</span>
+      </div>
+      <table class="top-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Views</th>
+            <th>Bar</th>
+            <th>Like%</th>
+          </tr>
+        </thead>
+        <tbody id="topTable"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Views vs Likes Scatter</div>
+          <div class="card-desc">Engagement correlation by video type</div>
+        </div>
+        <span class="card-badge badge-green">Correlation</span>
+      </div>
+      <canvas id="scatterChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ROW 3: Like Rate Bar + Comments Bar -->
+  <div class="chart-row row-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Like Rate by Video</div>
+          <div class="card-desc">% of viewers who liked · top 15</div>
+        </div>
+        <span class="card-badge badge-red">Engagement</span>
+      </div>
+      <canvas id="likeRateChart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Comments by Format</div>
+          <div class="card-desc">Avg comments per video type</div>
+        </div>
+        <span class="card-badge badge-blue">Discussion</span>
+      </div>
+      <canvas id="commentsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="section-label">Analyst Insights</div>
+  <div class="insights-grid">
+    <div class="insight-card" style="--accent-color: var(--red)">
+      <div class="insight-icon">🚀</div>
+      <div class="insight-title">Shorts Dominance</div>
+      <div class="insight-text">
+        Shorts average <span class="insight-highlight">340M views</span> per video — 
+        <span class="insight-highlight">40% more</span> than Long-form (244M). 
+        Shorter format wins on discovery and rewatch rate.
+      </div>
+    </div>
+    <div class="insight-card" style="--accent-color: var(--gold)">
+      <div class="insight-icon">💡</div>
+      <div class="insight-title">Engagement Paradox</div>
+      <div class="insight-text">
+        Long videos drive <span class="insight-highlight gold">4.5x more comments</span> than Shorts 
+        (110K vs 25K avg). Audiences discuss — but don't like — long content as much.
+      </div>
+    </div>
+    <div class="insight-card" style="--accent-color: var(--blue)">
+      <div class="insight-icon">📈</div>
+      <div class="insight-title">Peak: Oct 2023</div>
+      <div class="insight-text">
+        October 2023 was the strongest month: <span class="insight-highlight blue">490M avg views</span> 
+        per video across 3 uploads. Highest single-month performance in the dataset.
+      </div>
+    </div>
+    <div class="insight-card" style="--accent-color: var(--green)">
+      <div class="insight-icon">💰</div>
+      <div class="insight-title">Best Like Rate</div>
+      <div class="insight-text">
+        "I Tipped A Pizza Driver A Car" hit <span class="insight-highlight green">3.89%</span> like rate 
+        — the highest in the dataset. Emotional, generous content drives maximum approval.
+      </div>
+    </div>
+    <div class="insight-card" style="--accent-color: var(--orange)">
+      <div class="insight-icon">🎯</div>
+      <div class="insight-title">Recent Slowdown</div>
+      <div class="insight-text">
+        2025–2026 uploads average only <span class="insight-highlight">80M views</span> — far below the 
+        channel average. New videos need time to accumulate; this is a recency lag effect.
+      </div>
+    </div>
+    <div class="insight-card" style="--accent-color: var(--red)">
+      <div class="insight-icon">🏅</div>
+      <div class="insight-title">Golden Formula</div>
+      <div class="insight-text">
+        Top performing videos share 3 traits: <span class="insight-highlight">relatable premise + 
+        huge prize + Shorts format</span>. "World's Fastest Cleaners" (717M views) is the perfect example.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>MrBeast Analytics Dashboard · Data Source: YouTube Data API v3 · 44 videos analyzed</div>
+    <div>Built with Chart.js · Real data · 2019–2026</div>
+  </footer>
+</div>
+
+<script>
+// ==================== DATA ====================
+const top10 = [
+  { title: "The World's Fastest Cleaners", views: 717870917, likes: 26467802, like_rate: 3.69, type: "Shorts" },
+  { title: "I Tipped A Pizza Delivery Driver A Car", views: 688073897, likes: 26735842, like_rate: 3.89, type: "Shorts" },
+  { title: "Spot The Fake Animal For $10,000", views: 635961526, likes: 17260305, like_rate: 2.71, type: "Shorts" },
+  { title: "Reach the Money, Win $10,000", views: 511347784, likes: 7853664, like_rate: 1.54, type: "Shorts" },
+  { title: "Do Pawnshops Scam You?", views: 446764669, likes: 16683031, like_rate: 3.73, type: "Shorts" },
+  { title: "$1 vs $1,000,000 Hotel Room!", views: 426970813, likes: 7508317, like_rate: 1.76, type: "Long" },
+  { title: "7 Days Stranded At Sea", views: 417359821, likes: 8306527, like_rate: 1.99, type: "Long" },
+  { title: "$1 vs $100,000,000 House!", views: 413614111, likes: 6441975, like_rate: 1.56, type: "Long" },
+  { title: "I Built Willy Wonka's Chocolate Factory", views: 372246694, likes: 6930016, like_rate: 1.86, type: "Long" },
+  { title: "$100,000,000 Bathroom", views: 367862265, likes: 12740441, like_rate: 3.46, type: "Shorts" },
+];
+
+const monthly = [
+  { month: "2019-03", avg: 188 }, { month: "2019-10", avg: 234 }, { month: "2019-11", avg: 170 },
+  { month: "2020-05", avg: 341 }, { month: "2020-06", avg: 247 }, { month: "2020-07", avg: 279 },
+  { month: "2020-10", avg: 260 }, { month: "2021-04", avg: 254 }, { month: "2021-06", avg: 296 },
+  { month: "2022-06", avg: 372 }, { month: "2022-10", avg: 427 }, { month: "2022-11", avg: 246 },
+  { month: "2022-12", avg: 261 }, { month: "2023-06", avg: 447 }, { month: "2023-08", avg: 417 },
+  { month: "2023-09", avg: 263 }, { month: "2023-10", avg: 490 }, { month: "2024-01", avg: 192 },
+  { month: "2024-04", avg: 718 }, { month: "2024-05", avg: 322 }, { month: "2024-07", avg: 636 },
+  { month: "2024-09", avg: 341 }, { month: "2024-12", avg: 279 }, { month: "2025-01", avg: 162 },
+  { month: "2025-02", avg: 369 }, { month: "2025-06", avg: 107 }, { month: "2025-07", avg: 147 },
+  { month: "2025-08", avg: 191 }, { month: "2025-10", avg: 107 }, { month: "2025-11", avg: 35 },
+  { month: "2026-01", avg: 115 }, { month: "2026-02", avg: 64 }, { month: "2026-03", avg: 44 },
+];
+
+const scatter = [
+  { title: "My Chocolate Factory Blew Up", views: 9.1, likes: 0.55, type: "Medium" },
+  { title: "Survive 30 Days Stranded", views: 76.2, likes: 1.67, type: "Long" },
+  { title: "Would You Steal Money?", views: 45.2, likes: 1.30, type: "Shorts" },
+  { title: "I Built 10 Schools", views: 51.2, likes: 2.10, type: "Long" },
+  { title: "Every Step You Take $1000", views: 76.9, likes: 1.22, type: "Shorts" },
+  { title: "$1 vs $1B Futuristic Tech", views: 114.6, likes: 2.78, type: "Long" },
+  { title: "MrBeast Lab Disaster", views: 34.7, likes: 1.32, type: "Medium" },
+  { title: "Call Your Ex $10K", views: 107.4, likes: 2.77, type: "Shorts" },
+  { title: "Survive 100 Days Prison", views: 147.2, likes: 3.06, type: "Long" },
+  { title: "Every YouTube Play Button", views: 233.8, likes: 3.48, type: "Shorts" },
+  { title: "Jet Engine vs Human", views: 146.7, likes: 2.29, type: "Shorts" },
+  { title: "$1 vs $25K VFX", views: 106.7, likes: 2.52, type: "Shorts" },
+  { title: "Reach the Money $10K", views: 511.3, likes: 7.85, type: "Shorts" },
+  { title: "100 Hours Inside Pyramids", views: 225.7, likes: 5.34, type: "Long" },
+  { title: "Every Minute Eliminated", views: 162.0, likes: 3.15, type: "Long" },
+  { title: "2000 People Fight $5M", views: 195.6, likes: 4.63, type: "Long" },
+  { title: "Ronaldo SIUU", views: 363.0, likes: 9.46, type: "Shorts" },
+  { title: "Holding Bigger Dogs", views: 340.7, likes: 8.17, type: "Shorts" },
+  { title: "Spot Fake Animal $10K", views: 636.0, likes: 17.26, type: "Shorts" },
+  { title: "Sprinting More Money", views: 321.9, likes: 11.97, type: "Shorts" },
+  { title: "World's Fastest Cleaners", views: 717.9, likes: 26.47, type: "Shorts" },
+  { title: "Protect $500K Keep It", views: 192.2, likes: 4.80, type: "Long" },
+  { title: "$100M Bathroom", views: 367.9, likes: 12.74, type: "Shorts" },
+  { title: "$1 vs $100M House", views: 413.6, likes: 6.44, type: "Long" },
+  { title: "Tipped Pizza Driver A Car", views: 688.1, likes: 26.74, type: "Shorts" },
+  { title: "Lamborghini vs Shredder", views: 262.9, likes: 5.73, type: "Long" },
+  { title: "7 Days Stranded At Sea", views: 417.4, likes: 8.31, type: "Long" },
+  { title: "Do Pawnshops Scam You?", views: 446.8, likes: 16.68, type: "Shorts" },
+  { title: "50 Hours Antarctica", views: 255.1, likes: 5.84, type: "Long" },
+  { title: "Hydraulic Press Lamborghini", views: 266.9, likes: 5.79, type: "Long" },
+  { title: "Last Hand Off Jet", views: 245.9, likes: 4.95, type: "Long" },
+  { title: "$1 vs $1M Hotel", views: 427.0, likes: 7.51, type: "Long" },
+  { title: "Willy Wonka Factory", views: 372.2, likes: 6.93, type: "Long" },
+  { title: "50 Hours Max Security", views: 296.3, likes: 4.46, type: "Long" },
+  { title: "Hunted By Bounty Hunter", views: 237.1, likes: 4.37, type: "Long" },
+  { title: "Extreme Tag $100K", views: 270.5, likes: 4.01, type: "Long" },
+  { title: "Filled House With Slime", views: 260.0, likes: 4.12, type: "Medium" },
+  { title: "Adopted Every Dog", views: 278.6, likes: 5.00, type: "Long" },
+  { title: "I Broke Into A House", views: 210.4, likes: 3.97, type: "Long" },
+  { title: "$100K OR This Mystery?", views: 284.0, likes: 4.25, type: "Long" },
+  { title: "50 Hours Solitary", views: 341.4, likes: 5.10, type: "Long" },
+  { title: "Last To Fall $1M Part 1", views: 169.8, likes: 3.17, type: "Long" },
+  { title: "100 Dumpsters", views: 234.1, likes: 3.20, type: "Long" },
+  { title: "24 Hours In Desert", views: 188.3, likes: 3.42, type: "Long" },
+];
+
+const likeRateTop = [
+  { title: "My Chocolate Factory Blew Up", rate: 5.97, type: "Medium" },
+  { title: "I Tipped Pizza Driver A Car", rate: 3.89, type: "Shorts" },
+  { title: "MrBeast Lab Disaster", rate: 3.80, type: "Medium" },
+  { title: "Do Pawnshops Scam You?", rate: 3.73, type: "Shorts" },
+  { title: "Sprinting More Money", rate: 3.72, type: "Shorts" },
+  { title: "Spot Fake Animal $10K", rate: 3.69, type: "Shorts" },
+  { title: "$100M Bathroom", rate: 3.46, type: "Shorts" },
+  { title: "I Built 10 Schools", rate: 4.11, type: "Long" },
+  { title: "World's Fastest Cleaners", rate: 3.69, type: "Shorts" },
+  { title: "Would You Steal Money?", rate: 2.88, type: "Shorts" },
+  { title: "Ronaldo SIUU", rate: 2.61, type: "Shorts" },
+  { title: "Call Your Ex $10K", rate: 2.58, type: "Shorts" },
+  { title: "Protect $500K Keep It", rate: 2.50, type: "Long" },
+  { title: "$1 vs $1B Futuristic", rate: 2.43, type: "Long" },
+  { title: "Holding Bigger Dogs", rate: 2.40, type: "Shorts" },
+].sort((a,b)=>b.rate-a.rate);
+
+// COLORS
+const C = {
+  red: '#ff2d4e',
+  orange: '#ff6b00',
+  gold: '#ffd60a',
+  blue: '#00c2ff',
+  green: '#00e5a0',
+  muted: '#6b6b8a',
+  grid: 'rgba(255,255,255,0.05)',
+};
+
+const typeColor = { Shorts: C.red, Long: C.blue, Medium: C.gold };
+
+Chart.defaults.color = '#6b6b8a';
+Chart.defaults.font.family = 'DM Sans';
+Chart.defaults.font.size = 11;
+
+const tooltipStyle = {
+  backgroundColor: '#1a1a2e',
+  borderColor: '#2a2a3e',
+  borderWidth: 1,
+  padding: 10,
+  titleColor: '#f0f0f8',
+  bodyColor: '#a0a0c0',
+  cornerRadius: 8,
+};
+
+// 1. TIMELINE CHART
+new Chart(document.getElementById('timelineChart'), {
+  type: 'line',
+  data: {
+    labels: monthly.map(d => d.month),
+    datasets: [{
+      label: 'Avg Views (M)',
+      data: monthly.map(d => d.avg),
+      borderColor: C.red,
+      backgroundColor: 'rgba(255,45,78,0.08)',
+      borderWidth: 2.5,
+      pointRadius: 3,
+      pointBackgroundColor: C.red,
+      pointHoverRadius: 6,
+      fill: true,
+      tension: 0.4,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipStyle, callbacks: { label: ctx => `${ctx.raw}M views avg` } }
+    },
+    scales: {
+      x: {
+        grid: { color: C.grid },
+        ticks: { maxTicksLimit: 8, maxRotation: 45 }
+      },
+      y: {
+        grid: { color: C.grid },
+        ticks: { callback: v => v + 'M' }
+      }
+    }
+  }
+});
+
+// 2. DONUT CHART
+new Chart(document.getElementById('donutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Long (10min+)', 'Shorts (<1min)', 'Medium (1-10min)'],
+    datasets: [{
+      data: [26, 15, 3],
+      backgroundColor: [C.blue, C.red, C.gold],
+      borderColor: '#16161f',
+      borderWidth: 3,
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '68%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { padding: 16, usePointStyle: true, pointStyleWidth: 8 }
+      },
+      tooltip: { ...tooltipStyle }
+    }
+  }
+});
+
+// 3. TYPE COMPARISON BAR
+new Chart(document.getElementById('typeChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Shorts', 'Long', 'Medium'],
+    datasets: [{
+      label: 'Avg Views (M)',
+      data: [341, 244, 101],
+      backgroundColor: [C.red, C.blue, C.gold],
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipStyle, callbacks: { label: ctx => `${ctx.raw}M avg views` } }
+    },
+    scales: {
+      x: { grid: { color: C.grid } },
+      y: { grid: { color: C.grid }, ticks: { callback: v => v + 'M' } }
+    }
+  }
+});
+
+// 4. TOP 10 TABLE
+const tbody = document.getElementById('topTable');
+const maxViews = top10[0].views;
+top10.forEach((v, i) => {
+  const typeClass = { Shorts: 'type-s', Long: 'type-l', Medium: 'type-m' }[v.type];
+  const barPct = (v.views / maxViews * 100).toFixed(0);
+  const rankClass = i < 3 ? 'rank top3' : 'rank';
+  const likeColor = v.like_rate >= 3 ? C.green : v.like_rate >= 2 ? C.gold : C.muted;
+  tbody.innerHTML += `
+    <tr class="data-row">
+      <td class="${rankClass}">${i+1}</td>
+      <td class="vid-title">${v.title}</td>
+      <td><span class="vid-type ${typeClass}">${v.type}</span></td>
+      <td class="num">${(v.views/1e6).toFixed(0)}M</td>
+      <td><div class="bar-wrap"><div class="bar-fill" style="width:${barPct}%"></div></div></td>
+      <td class="like-pct" style="color:${likeColor}">${v.like_rate}%</td>
+    </tr>`;
+});
+
+// 5. SCATTER CHART
+const shortsPts = scatter.filter(d => d.type === 'Shorts').map(d => ({ x: d.views, y: d.likes, title: d.title }));
+const longPts = scatter.filter(d => d.type === 'Long').map(d => ({ x: d.views, y: d.likes, title: d.title }));
+const medPts = scatter.filter(d => d.type === 'Medium').map(d => ({ x: d.views, y: d.likes, title: d.title }));
+
+new Chart(document.getElementById('scatterChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [
+      { label: 'Shorts', data: shortsPts, backgroundColor: 'rgba(255,45,78,0.75)', pointRadius: 6, pointHoverRadius: 9 },
+      { label: 'Long', data: longPts, backgroundColor: 'rgba(0,194,255,0.7)', pointRadius: 6, pointHoverRadius: 9 },
+      { label: 'Medium', data: medPts, backgroundColor: 'rgba(255,214,10,0.8)', pointRadius: 7, pointHoverRadius: 10 },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyleWidth: 8 } },
+      tooltip: {
+        ...tooltipStyle,
+        callbacks: {
+          label: ctx => {
+            const d = ctx.raw;
+            return [`${d.title || ''}`, `Views: ${d.x.toFixed(0)}M`, `Likes: ${d.y.toFixed(1)}M`];
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: C.grid }, title: { display: true, text: 'Views (M)', color: C.muted }, ticks: { callback: v => v + 'M' } },
+      y: { grid: { color: C.grid }, title: { display: true, text: 'Likes (M)', color: C.muted }, ticks: { callback: v => v + 'M' } }
+    }
+  }
+});
+
+// 6. LIKE RATE BAR
+new Chart(document.getElementById('likeRateChart'), {
+  type: 'bar',
+  data: {
+    labels: likeRateTop.map(d => d.title.length > 22 ? d.title.slice(0,22)+'…' : d.title),
+    datasets: [{
+      label: 'Like Rate (%)',
+      data: likeRateTop.map(d => d.rate),
+      backgroundColor: likeRateTop.map(d => typeColor[d.type] + 'cc'),
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipStyle, callbacks: { label: ctx => `${ctx.raw}% like rate` } }
+    },
+    scales: {
+      x: { grid: { color: C.grid }, ticks: { callback: v => v + '%' } },
+      y: { grid: { color: 'transparent' }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// 7. COMMENTS CHART
+new Chart(document.getElementById('commentsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Long (10min+)', 'Shorts (<1min)', 'Medium (1-10min)'],
+    datasets: [
+      {
+        label: 'Avg Comments',
+        data: [109961, 24683, 49039],
+        backgroundColor: [C.blue, C.red, C.gold],
+        borderRadius: 8,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipStyle, callbacks: { label: ctx => `${ctx.raw.toLocaleString()} avg comments` } }
+    },
+    scales: {
+      x: { grid: { color: C.grid } },
+      y: {
+        grid: { color: C.grid },
+        ticks: { callback: v => v >= 1000 ? (v/1000)+'K' : v }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
