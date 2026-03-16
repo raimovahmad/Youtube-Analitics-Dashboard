@@ -5,18 +5,14 @@ import json
 from sklearn.linear_model import LinearRegression
 import numpy as np
 
-# ==========================================
-# CONFIG
-# ==========================================
+
 key = API_KEY = "API_KEY"
 CHANNEL_ID = "CHANNEL_ID"  # MrBeast
 
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
 
-# ==========================================
-# 1. DATA COLLECTION — 200 VIDEO (API)
-# ==========================================
+
 print("📥 Fetching videos from YouTube API...")
 
 all_items = []
@@ -45,9 +41,7 @@ dates = [item["snippet"]["publishedAt"] for item in all_items]
 print(f"✅ Total videos collected: {len(video_ids)}")
 
 
-# ==========================================
-# 2. GET STATISTICS (batch — 50 ta lik)
-# ==========================================
+
 print("\n📊 Fetching video statistics...")
 
 views, likes, comments, durations = [], [], [], []
@@ -73,9 +67,7 @@ for i in range(0, len(video_ids), 50):
 print(f"✅ Statistics fetched for {len(views)} videos")
 
 
-# ==========================================
-# 3. DATA CLEANING & PROCESSING
-# ==========================================
+
 print("\n🔧 Processing data...")
 
 df = pd.DataFrame(
@@ -90,7 +82,7 @@ df = pd.DataFrame(
 )
 
 
-# Duration → seconds
+
 def parse_duration(d):
     if not isinstance(d, str):
         return 0
@@ -111,7 +103,7 @@ df["duration_sec"] = df["duration"].apply(parse_duration)
 df["duration_min"] = (df["duration_sec"] / 60).round(1)
 
 
-# Video type
+
 def categorize(sec):
     if sec < 60:
         return "Shorts"
@@ -132,9 +124,7 @@ print(f"  Long:   {(df['type']=='Long').sum()}")
 print(f"  Medium: {(df['type']=='Medium').sum()}")
 
 
-# ==========================================
-# 4. TITLE KEYWORD ANALYSIS
-# ==========================================
+
 print("\n🔍 Keyword Analysis...")
 
 keywords = [
@@ -171,9 +161,7 @@ kw_df = pd.DataFrame(kw_results).sort_values("avg_views", ascending=False)
 print(kw_df.to_string(index=False))
 
 
-# ==========================================
-# 5. VIEWS PREDICTOR MODEL
-# ==========================================
+
 print("\n🤖 Training Views Predictor...")
 
 df["is_short"] = (df["type"] == "Shorts").astype(int)
@@ -195,7 +183,7 @@ model.fit(X, y)
 score = model.score(X, y)
 print(f"  Model R² score: {score:.3f}")
 
-# Feature importance
+
 importance = pd.DataFrame(
     {
         "feature": features,
@@ -205,7 +193,7 @@ importance = pd.DataFrame(
 print("\n  Feature Impact on Views:")
 print(importance.to_string(index=False))
 
-# Prediction examples
+
 scenarios = [
     {"name": "Shorts + $ + win", "vals": [1, 1, 0, 0, 1, 0]},
     {"name": "Long + survive + days", "vals": [0, 0, 0, 1, 0, 1]},
@@ -217,9 +205,7 @@ for sc in scenarios:
     print(f"  {sc['name']}: ~{pred:,} views")
 
 
-# ==========================================
-# 6. SUMMARY STATS
-# ==========================================
+
 print("\n📈 Channel Summary:")
 print(f"  Total videos analyzed : {len(df)}")
 print(f"  Total views           : {df['views'].sum():,}")
@@ -230,20 +216,18 @@ print(f"  Best video            : {df.loc[df['views'].idxmax(), 'title']}")
 print(f"  Best video views      : {df['views'].max():,}")
 
 
-# ==========================================
-# 7. EXPORT
-# ==========================================
+
 print("\n💾 Saving files...")
 
-# Excel — asosiy dataset
+
 df.to_excel("mrbeast_videos.xlsx", index=False)
 print("  ✅ mrbeast_videos.xlsx saved")
 
-# Keyword analysis
+
 kw_df.to_excel("keyword_analysis.xlsx", index=False)
 print("  ✅ keyword_analysis.xlsx saved")
 
-# JSON — dashboard uchun
+
 export = {
     "kpis": {
         "total_videos": len(df),
